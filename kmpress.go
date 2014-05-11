@@ -1,12 +1,13 @@
 package main
 
 import (
-	_ "code.google.com/p/go.image/tiff"
+  _ "code.google.com/p/go.image/tiff"
   "fmt"
   "log"
-	"image"
+  "image"
+  "math"
   "math/rand"
-	"os"
+  "os"
 )
 
 type Image struct {
@@ -38,7 +39,7 @@ func MakeRandomCluster(img *Image, nClusters int) (*ClusterSet, error) {
 
   for i := 0; i < nClusters; i++ {
     k := rand.Intn(nPixels)
-    c.Colors[3 * i] = img.Vals[3 * k]
+    c.Colors[3 * i]     = img.Vals[3 * k]
     c.Colors[3 * i + 1] = img.Vals[3 * k + 1]
     c.Colors[3 * i + 2] = img.Vals[3 * k + 2]
   }
@@ -46,40 +47,89 @@ func MakeRandomCluster(img *Image, nClusters int) (*ClusterSet, error) {
   return c, nil
 }
 
-func (c *ClusterSet) Converge(maxIterations int) {
+func (c *ClusterSet) Converge(img *Image, maxIterations int) {
+  nClusters := len(c.Colors) / 3
+  nPixels := len(img.Vals) / 3
+  colors := img.Vals
+  oldc := c.Colors
+
+  for i := 0; i < maxIterations; i++ {
+    newAssigned := make([]int, nClusters)
+    newSums := make([]int, nClusters * 3)
+
+    for j := 0; j < nPixels; j++ {
+      k := getMinDist(colors, oldc, j, nClusters)
+      newAssigned[k]++
+      newSums[3 * k]     += int(colors[3 * j])
+      newSums[3 * k + 1] += int(colors[3 * j + 1])
+      newSums[3 * k + 2] += int(colors[3 * j + 2])
+    }
+
+    newc := make([]byte, len(oldc))
+    
+    for j := 0; j < nClusters; j++ {
+      if newAssigned[j] != 0 {
+        newc[3 * j]     = byte(newSums[3 * j]     / newAssigned[j])
+        newc[3 * j + 1] = byte(newSums[3 * j + 1] / newAssigned[j])
+        newc[3 * j + 2] = byte(newSums[3 * j + 2] / newAssigned[j])
+      }
+    }
+
+    oldc = newc
+  }
+
+  c.Colors = oldc
+}
+
+func getMinDist(colors, oldc []byte, j, nClusters int) int {
+  minDist := math.MaxFloat64
+  minK := -1
+
+  for k := 0; k < nClusters; k++ {
+    d1 := colors[3 * j]     - oldc[3 * k]
+    d2 := colors[3 * j + 1] - oldc[3 * k + 1]
+    d3 := colors[3 * j + 2] - oldc[3 * k + 2]
+    dist := math.Sqrt(float64(d1 * d1 + d2 * d2 + d3 * d3))
+    if dist < minDist {
+      minDist = dist
+      minK = k
+    }
+  }
+
+  return minK
 }
 
 func openImage(path string) (image.Image, error) {
-	reader, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
+  reader, err := os.Open(path)
+  if err != nil {
+    return nil, err
+  }
 
-	img, _, err := image.Decode(reader)
-	if err != nil {
-		return nil, err
-	}
+  img, _, err := image.Decode(reader)
+  if err != nil {
+    return nil, err
+  }
 
-	return img, nil
+  return img, nil
 }
 
 func imageToArray(img image.Image) []byte {
-	bounds := img.Bounds()
-	size := bounds.Size()
-	array := make([]byte, size.X*size.Y*3)
+  bounds := img.Bounds()
+  size := bounds.Size()
+  array := make([]byte, size.X*size.Y*3)
 
-	i := 0
-	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			r, g, b, _ := img.At(x, y).RGBA()
-			array[i] = byte(r >> 8)
-			array[i+1] = byte(g >> 8)
-			array[i+2] = byte(b >> 8)
-			i += 3
-		}
-	}
+  i := 0
+  for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+    for x := bounds.Min.X; x < bounds.Max.X; x++ {
+      r, g, b, _ := img.At(x, y).RGBA()
+      array[i] = byte(r >> 8)
+      array[i+1] = byte(g >> 8)
+      array[i+2] = byte(b >> 8)
+      i += 3
+    }
+  }
 
-	return array
+  return array
 }
 
 func main() {
@@ -92,6 +142,8 @@ func main() {
   if err != nil {
     log.Fatal(err)
   }
+
+  clusterSet.Converge(img, 100)
 
   fmt.Println(clusterSet.Colors)
 }
