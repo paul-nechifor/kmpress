@@ -5,6 +5,7 @@ import (
   "fmt"
   "log"
 	"image"
+  "math/rand"
 	"os"
 )
 
@@ -28,9 +29,20 @@ func Open(path string) (*Image, error) {
   return img, nil
 }
 
+// TODO: Make sure colors aren't the same.
 func MakeRandomCluster(img *Image, nClusters int) (*ClusterSet, error) {
   c := new(ClusterSet)
-  c.Colors = img.Vals
+  c.Colors = make([]byte, nClusters * 3)
+
+  nPixels := len(img.Vals) / 3
+
+  for i := 0; i < nClusters; i++ {
+    k := rand.Intn(nPixels)
+    c.Colors[3 * i] = img.Vals[3 * k]
+    c.Colors[3 * i + 1] = img.Vals[3 * k + 1]
+    c.Colors[3 * i + 2] = img.Vals[3 * k + 2]
+  }
+
   return c, nil
 }
 
