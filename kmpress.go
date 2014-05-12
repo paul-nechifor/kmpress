@@ -87,10 +87,10 @@ func getMinDist(colors, oldc []byte, j, nClusters int) int {
   minK := -1
 
   for k := 0; k < nClusters; k++ {
-    d1 := colors[3 * j]     - oldc[3 * k]
-    d2 := colors[3 * j + 1] - oldc[3 * k + 1]
-    d3 := colors[3 * j + 2] - oldc[3 * k + 2]
-    dist := math.Sqrt(float64(d1 * d1 + d2 * d2 + d3 * d3))
+    d1 := float64(colors[3 * j])     - float64(oldc[3 * k])
+    d2 := float64(colors[3 * j + 1]) - float64(oldc[3 * k + 1])
+    d3 := float64(colors[3 * j + 2]) - float64(oldc[3 * k + 2])
+    dist := math.Sqrt(d1 * d1 + d2 * d2 + d3 * d3)
     if dist < minDist {
       minDist = dist
       minK = k
