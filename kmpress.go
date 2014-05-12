@@ -2,7 +2,7 @@ package main
 
 import (
   "code.google.com/p/go.image/tiff"
-  "fmt"
+  "flag"
   "image"
   "image/color"
   "log"
@@ -169,23 +169,31 @@ func encodeToCluster(colors []byte, c *ClusterSet) []byte {
   return out
 }
 
-func main() {
-  img, err := Open("examples/bird_small.tiff")
+func encode(nClusters, maxIterations int, i, o string) {
+  img, err := Open(i)
   if err != nil {
     log.Fatal(err)
   }
 
-  clusterSet, err := MakeRandomCluster(img, 16)
+  clusterSet, err := MakeRandomCluster(img, nClusters)
   if err != nil {
     log.Fatal(err)
   }
 
-  clusterSet.Converge(img, 100)
+  clusterSet.Converge(img, maxIterations)
 
   colors := encodeToCluster(img.Vals, clusterSet)
   s := img.Image.Bounds().Size()
   img2 := arrayToImage(colors, s.X, s.Y)
-  writeImage(img2, "examples/bird_small_done.tiff")
+  writeImage(img2, o)
+}
 
-  fmt.Println("Done.")
+func main() {
+  nClusters := flag.Int("clusters", 16, "number of clusters")
+  maxIterations := flag.Int("max", 16, "maximum number of iterations")
+  i := flag.String("i", "", "input file")
+  o := flag.String("o", "", "output file")
+  flag.Parse()
+
+  encode(*nClusters, *maxIterations, *i, *o)
 }
