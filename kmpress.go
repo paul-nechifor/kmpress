@@ -1,10 +1,11 @@
 package main
 
 import (
-  _ "code.google.com/p/go.image/tiff"
+  "code.google.com/p/go.image/tiff"
   "fmt"
-  "log"
   "image"
+  "image/color"
+  "log"
   "math"
   "math/rand"
   "os"
@@ -113,6 +114,16 @@ func openImage(path string) (image.Image, error) {
   return img, nil
 }
 
+func writeImage(img image.Image, path string) error {
+  out, err := os.Create(path)
+  if err != nil {
+    return err
+  }
+  defer out.Close()
+  tiff.Encode(out, img, &tiff.Options{tiff.Deflate, true})
+  return nil
+}
+
 func imageToArray(img image.Image) []byte {
   bounds := img.Bounds()
   size := bounds.Size()
@@ -132,6 +143,32 @@ func imageToArray(img image.Image) []byte {
   return array
 }
 
+func arrayToImage(colors []byte, w, h int) image.Image {
+  nPixels := len(colors) / 3
+  img := image.NewRGBA(image.Rect(0, 0, w, h))
+
+  for i := 0; i < nPixels; i++ {
+    c := color.RGBA{colors[3 * i], colors[3 * i + 1], colors[3 * i + 2], 255}
+    img.Set(i % w, i / w, c)
+  }
+
+  return img
+}
+
+func encodeToCluster(colors []byte, c *ClusterSet) []byte {
+  nClusters := len(c.Colors) / 3
+  nPixels := len(colors) / 3
+  out := make([]byte, nPixels * 3)
+
+  for i := 0; i < nPixels; i++ {
+    k := getMinDist(colors, c.Colors, i, nClusters)
+    out[3 * i] = c.Colors[3 * k]
+    out[3 * i + 1] = c.Colors[3 * k + 1]
+    out[3 * i + 2] = c.Colors[3 * k + 2]
+  }
+  return out
+}
+
 func main() {
   img, err := Open("examples/bird_small.tiff")
   if err != nil {
@@ -145,5 +182,10 @@ func main() {
 
   clusterSet.Converge(img, 100)
 
-  fmt.Println(clusterSet.Colors)
+  colors := encodeToCluster(img.Vals, clusterSet)
+  s := img.Image.Bounds().Size()
+  img2 := arrayToImage(colors, s.X, s.Y)
+  writeImage(img2, "examples/bird_small_done.tiff")
+
+  fmt.Println("Done.")
 }
