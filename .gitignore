@@ -1,1 +1,3 @@
 /lib
+/examples/results/*
+!/examples/results/.gitkeep
