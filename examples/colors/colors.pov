@@ -6,7 +6,7 @@ camera {
 	sky z
 	right -0.24*x*image_width/image_height
 	up 0.24*z
-	look_at <0,0,4.5>
+	look_at <0,0,-0.5>
 }
 
 // White background
