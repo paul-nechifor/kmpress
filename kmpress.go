@@ -83,9 +83,22 @@ func (c *ClusterSet) Converge(img *Image, maxIterations int) {
       }
     }
 
+    PrintIteration(newc, i + 1)
+
+    // Test convergence.
+    modified := false
+    for j := 0; j < nClusters; j++ {
+      if newc[j] != oldc[j] {
+        modified = true
+        break
+      }
+    }
+
     oldc = newc
 
-    PrintIteration(newc, i + 1)
+    if !modified {
+      break
+    }
   }
 
   c.Colors = oldc
