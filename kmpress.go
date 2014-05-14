@@ -24,11 +24,11 @@ type ClusterSet struct {
 func Open(path string) (*Image, error) {
   var err error
   img := new(Image)
-  img.Image, err = openImage(path)
+  img.Image, err = OpenImage(path)
   if err != nil {
     return nil, err
   }
-  img.Vals = imageToArray(img.Image)
+  img.Vals = ImageToArray(img.Image)
   return img, nil
 }
 
@@ -66,7 +66,7 @@ func (c *ClusterSet) Converge(img *Image, maxIterations int) {
     newSums := make([]int, nClusters * 3)
 
     for j := 0; j < nPixels; j++ {
-      k := getMinDist(colors, oldc, j, nClusters)
+      k := GetMinDist(colors, oldc, j, nClusters)
       newAssigned[k]++
       newSums[3 * k]     += int(colors[3 * j])
       newSums[3 * k + 1] += int(colors[3 * j + 1])
@@ -104,7 +104,7 @@ func (c *ClusterSet) Converge(img *Image, maxIterations int) {
   c.Colors = oldc
 }
 
-func getMinDist(colors, oldc []byte, j, nClusters int) int {
+func GetMinDist(colors, oldc []byte, j, nClusters int) int {
   minDist := math.MaxFloat64
   minK := -1
 
@@ -122,7 +122,7 @@ func getMinDist(colors, oldc []byte, j, nClusters int) int {
   return minK
 }
 
-func openImage(path string) (image.Image, error) {
+func OpenImage(path string) (image.Image, error) {
   reader, err := os.Open(path)
   if err != nil {
     return nil, err
@@ -136,7 +136,7 @@ func openImage(path string) (image.Image, error) {
   return img, nil
 }
 
-func writeImage(img image.Image, path string) error {
+func WriteImage(img image.Image, path string) error {
   out, err := os.Create(path)
   if err != nil {
     return err
@@ -146,7 +146,7 @@ func writeImage(img image.Image, path string) error {
   return nil
 }
 
-func imageToArray(img image.Image) []byte {
+func ImageToArray(img image.Image) []byte {
   bounds := img.Bounds()
   size := bounds.Size()
   array := make([]byte, size.X*size.Y*3)
@@ -165,7 +165,7 @@ func imageToArray(img image.Image) []byte {
   return array
 }
 
-func arrayToImage(colors []byte, w, h int) image.Image {
+func ArrayToImage(colors []byte, w, h int) image.Image {
   nPixels := len(colors) / 3
   img := image.NewRGBA(image.Rect(0, 0, w, h))
 
@@ -177,13 +177,13 @@ func arrayToImage(colors []byte, w, h int) image.Image {
   return img
 }
 
-func encodeToCluster(colors []byte, c *ClusterSet) []byte {
+func EncodeToCluster(colors []byte, c *ClusterSet) []byte {
   nClusters := len(c.Colors) / 3
   nPixels := len(colors) / 3
   out := make([]byte, nPixels * 3)
 
   for i := 0; i < nPixels; i++ {
-    k := getMinDist(colors, c.Colors, i, nClusters)
+    k := GetMinDist(colors, c.Colors, i, nClusters)
     out[3 * i] = c.Colors[3 * k]
     out[3 * i + 1] = c.Colors[3 * k + 1]
     out[3 * i + 2] = c.Colors[3 * k + 2]
@@ -191,7 +191,7 @@ func encodeToCluster(colors []byte, c *ClusterSet) []byte {
   return out
 }
 
-func encode(nClusters, maxIterations int, i, o string) {
+func Encode(nClusters, maxIterations int, i, o string) {
   img, err := Open(i)
   if err != nil {
     log.Fatal(err)
@@ -204,10 +204,14 @@ func encode(nClusters, maxIterations int, i, o string) {
 
   clusterSet.Converge(img, maxIterations)
 
-  colors := encodeToCluster(img.Vals, clusterSet)
+  EncodeSave(img, clusterSet, o)
+}
+
+func EncodeSave(img *Image, clusterSet *ClusterSet, o string) {
+  colors := EncodeToCluster(img.Vals, clusterSet)
   s := img.Image.Bounds().Size()
-  img2 := arrayToImage(colors, s.X, s.Y)
-  writeImage(img2, o)
+  img2 := ArrayToImage(colors, s.X, s.Y)
+  WriteImage(img2, o)
 }
 
 func main() {
@@ -217,5 +221,5 @@ func main() {
   o := flag.String("o", "", "output file")
   flag.Parse()
 
-  encode(*nClusters, *maxIterations, *i, *o)
+  Encode(*nClusters, *maxIterations, *i, *o)
 }
