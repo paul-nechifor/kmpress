@@ -3,6 +3,7 @@ package main
 import (
   "code.google.com/p/go.image/tiff"
   "flag"
+  "fmt"
   "image"
   "image/color"
   "log"
@@ -48,11 +49,17 @@ func MakeRandomCluster(img *Image, nClusters int) (*ClusterSet, error) {
   return c, nil
 }
 
+func PrintIteration(colors []byte, i int) {
+  fmt.Println("iteration>>>", i, colors)
+}
+
 func (c *ClusterSet) Converge(img *Image, maxIterations int) {
   nClusters := len(c.Colors) / 3
   nPixels := len(img.Vals) / 3
   colors := img.Vals
   oldc := c.Colors
+
+  PrintIteration(oldc, 0)
 
   for i := 0; i < maxIterations; i++ {
     newAssigned := make([]int, nClusters)
@@ -77,6 +84,8 @@ func (c *ClusterSet) Converge(img *Image, maxIterations int) {
     }
 
     oldc = newc
+
+    PrintIteration(newc, i + 1)
   }
 
   c.Colors = oldc
