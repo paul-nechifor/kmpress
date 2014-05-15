@@ -9,11 +9,13 @@ another][facetrain]). The requirements are from [here][ex9].
 
 ## Install
 
+### KMPress binary
+
+    cd kmpress
     export GOPATH="`pwd`/lib"
     mkdir -p "`pwd`/lib"
     go get ./...
-
-## Examples
+    cd ..
 
 ### Voronoi
 
@@ -21,7 +23,7 @@ You have to install [Voro++][voro] and [POV-Ray][povray].
 
 Build the executable:
 
-    cd examples/colors
+    cd voronoi
     make
 
 ## License

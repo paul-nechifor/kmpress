@@ -1,4 +1,4 @@
-/lib
-/kmpress
+/kmpress/lib
+/kmpress/kmpress
 /examples/results/*
 !/examples/results/.gitkeep

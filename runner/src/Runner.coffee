@@ -8,7 +8,7 @@ class module.exports
     @iterationColors = []
 
   run: (args, cb) ->
-    program = spawn __dirname + '/../../kmpress', args
+    program = spawn __dirname + '/../../kmpress/kmpress', args
     lineStream = byline.createStream program.stdout
     lineStream.on 'data', @interpretLine.bind this
     program.on 'close', (code) ->

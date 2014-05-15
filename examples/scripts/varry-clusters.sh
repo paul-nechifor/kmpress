@@ -3,7 +3,7 @@
 set -e
 
 here="`dirname $0`"
-kmpress="$here/../../kmpress"
+kmpress="$here/../../kmpress/kmpress"
 results="$here/../results"
 image="$here/../images/bird_large.tiff"
 
