@@ -9,26 +9,17 @@ another][facetrain]). The requirements are from [here][ex9].
 
 ## Install
 
-### KMPress binary
+In order to build `voronoi` you have to install [Voro++][voro] and
+[POV-Ray][povray].
 
-    cd kmpress
-    export GOPATH="`pwd`/lib"
-    mkdir -p "`pwd`/lib"
-    go get ./...
-    cd ..
+To download the rest of the dependencies and to build everything run:
 
-### Voronoi
-
-You have to install [Voro++][voro] and [POV-Ray][povray].
-
-Build the executable:
-
-    cd voronoi
-    make
+    ./build.sh
 
 ## License
 
 MIT
+
 [course]: http://thor.info.uaic.ro/~ciortuz/teaching.html
 [facetrain]: https://github.com/paul-nechifor/facetrain
 [ex9]: http://openclassroom.stanford.edu/MainFolder/DocumentPage.php?course=MachineLearning&doc=exercises/ex9/ex9.html
