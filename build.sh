@@ -14,3 +14,7 @@ cd ..
 cd runner
 npm install
 cd ..
+
+cd voronoi-runner
+npm install
+cd ..
