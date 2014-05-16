@@ -1,5 +1,8 @@
 package main
 
+// I hate, as much as you do, the fact that I haven't yet updated this code to
+// look and perform better.
+
 import (
   "code.google.com/p/go.image/tiff"
   "flag"
@@ -214,12 +217,38 @@ func EncodeSave(img *Image, clusterSet *ClusterSet, o string) {
   WriteImage(img2, o)
 }
 
+func RenderCluster(i, o string) {
+  img, err := Open(i)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  var n int
+  fmt.Scanf("%d", &n)
+  colors := make([]byte, n)
+  for i := 0; i < n; i++ {
+    fmt.Scanf("%d", &colors[i])
+  }
+  fmt.Println("Number", n, colors)
+
+  clusterSet := new(ClusterSet)
+  clusterSet.Colors = colors
+
+  EncodeSave(img, clusterSet, o)
+}
+
 func main() {
   nClusters := flag.Int("clusters", 16, "number of clusters")
   maxIterations := flag.Int("max", 16, "maximum number of iterations")
   i := flag.String("i", "", "input file")
   o := flag.String("o", "", "output file")
+  renderCluster := flag.Bool("renderCluster", false, "")
   flag.Parse()
+
+  if *renderCluster {
+    RenderCluster(*i, *o)
+    return
+  }
 
   Encode(*nClusters, *maxIterations, *i, *o)
 }
