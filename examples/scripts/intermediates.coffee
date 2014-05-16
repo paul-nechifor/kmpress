@@ -9,7 +9,8 @@ getIntermediaryValues = (image, cb) ->
   args = ['-i', image, '-o', '', '-max', '1000']
   r.run args, (err) ->
     return cb err if err
-    cb null, r.iterationColors
+    grouped = (groupArray x for x in r.iterationColors)
+    cb null, grouped
 
 groupArray = (array) ->
   ret = []
@@ -28,26 +29,53 @@ renderFrame = (array, i, cb) ->
     width: 1080
     height: 1080
     highQuality: true
-  v.run groupArray(array), path, opts, cb
+  v.run array, path, opts, cb
 
 renderAllSteps = (arrays, cb) ->
   i = 0
   next = ->
     return cb null if i >= arrays.length
     renderFrame arrays[i], i, (err) ->
-      console.log 'Completed frame:', i
+      console.log 'Completed frame', i, 'of', arrays.length
       return cb err if err
       i++
       next()
   next()
 
+interpolateEvolution = (clustersEvolution, nStages) ->
+  ret = []
+
+  prev = clustersEvolution[0]
+  ret.push prev
+
+  for i in [1 .. clustersEvolution.length - 1]
+    clus = clustersEvolution[i]
+    addInterpolated ret, prev, clus, nStages
+    prev = clus
+    ret.push prev
+
+  return ret
+
+# nStages represends the number of intermediary points.
+addInterpolated = (list, start, end, nStages) ->
+  n = start.length
+  for i in [1 .. nStages]
+    stage =
+      for j in [0 .. n - 1]
+        for k in [0 .. 2]
+          increment = (end[j][k] - start[j][k]) / (1 + nStages)
+          start[j][k] + i * increment
+    list.push stage
+  return
+
 main = ->
   image = __dirname + '/../images/bird_large.tiff'
-  getIntermediaryValues image, (err, arrays) ->
+  getIntermediaryValues image, (err, clustersEvolution) ->
     throw err if err
     fs.mkdir voronoiDir, (err) ->
       # Ignore error so far.
-      renderAllSteps arrays, (err) ->
+      interpolated = interpolateEvolution clustersEvolution, 5
+      renderAllSteps interpolated, (err) ->
         throw err if err
       
 main()
