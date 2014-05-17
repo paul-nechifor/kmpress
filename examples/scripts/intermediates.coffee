@@ -1,6 +1,6 @@
 fs = require 'fs'
 {Runner} = require '../../runner'
-{Voronoi} = require '../../voronoi-runner'
+{Voronoi, Stitcher} = require '../../voronoi-runner'
 
 voronoiDir = __dirname + '/../results/voronoi-frames'
 
@@ -26,7 +26,7 @@ renderFrame = (array, i, cb) ->
   v = new Voronoi
   path = "#{voronoiDir}/#{i}.png"
   opts =
-    width: 1080
+    width: 1920
     height: 1080
     highQuality: true
   v.run array, path, opts, cb
@@ -74,8 +74,14 @@ main = ->
     throw err if err
     fs.mkdir voronoiDir, (err) ->
       # Ignore error so far.
-      interpolated = interpolateEvolution clustersEvolution, 5
+      interpolated = interpolateEvolution clustersEvolution, 6
       renderAllSteps interpolated, (err) ->
-        throw err if err
+        s = new Stitcher
+          inPattern: voronoiDir + '/%d.png'
+          rIn: 30
+          rOut: 30
+          out: __dirname + '/../results/voronoi.mp4'
+        s.stitch (err) ->
+          throw err if err
       
 main()
