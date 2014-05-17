@@ -16,6 +16,10 @@ To download the rest of the dependencies and to build everything run:
 
     ./build.sh
 
+## Clusters animation
+
+[![Clusters animation](http://img.youtube.com/vi/HGde-7Ll7C4/0.jpg)](https://www.youtube.com/watch?v=HGde-7Ll7C4)
+
 ## License
 
 MIT
