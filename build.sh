@@ -3,6 +3,7 @@
 cd kmpress
 export GOPATH="`pwd`/lib"
 mkdir -p "`pwd`/lib" 2>/dev/null
+# Works despite the error.
 go get ./...
 go build kmpress.go
 cd ..

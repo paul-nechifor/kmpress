@@ -5,12 +5,16 @@ A program which uses *k*-means clustering to encode an image using fewer colors.
 ![KMPress](screenshot.png)
 
 This is one of my [Machine Learning][course] homeworks ([see
-another][facetrain]). The requirements are from [here][ex9].
+another][facetrain]). These are the [requirements][ex9].
 
 ## Install
 
 In order to build `voronoi` you have to install [Voro++][voro] and
-[POV-Ray][povray].
+[POV-Ray][povray] [[1]][povray1].
+
+### For Ubuntu
+
+    sudo apt-get install golang mercurial
 
 To download the rest of the dependencies and to build everything run:
 
@@ -29,3 +33,4 @@ MIT
 [ex9]: http://openclassroom.stanford.edu/MainFolder/DocumentPage.php?course=MachineLearning&doc=exercises/ex9/ex9.html
 [voro]: http://math.lbl.gov/voro++/download/
 [povray]: http://www.povray.org/download/
+[povray1]: http://www.povray.org/ftp/pub/povray/Old-Versions/Official-3.62/Linux/
