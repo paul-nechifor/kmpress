@@ -10,7 +10,7 @@ class module.exports
   run: (points, imagePath, opts, cb) ->
     tmp.dir {unsafeCleanup: true}, (err, path) =>
       return cb err if err
-      @writeFiles path, points, (err, sceneFile) =>
+      @writeFiles path, points, opts, (err, sceneFile) =>
         return cb err if err
         args = @parseOpts opts
         args.push '+O' + imagePath
@@ -19,14 +19,14 @@ class module.exports
           return cb err if err
           cb()
 
-  writeFiles: (path, points, cb) ->
+  writeFiles: (path, points, opts, cb) ->
     list = path + '/list'
     scene = path + '/scene.pov'
     particles = path + '/particles.pov'
     cells = path + '/cells.pov'
     @writeList list, points, (err) =>
       return cb err if err
-      @writeScene scene, particles, cells, (err) =>
+      @writeScene scene, particles, cells, opts, (err) =>
         return cb err if err
         @runVoronoi [list, cells, particles], (err) ->
           return cb err if err
@@ -66,17 +66,17 @@ class module.exports
       return cb err if err
       cb()
 
-  writeScene: (path, particlesFile, cellsFile, cb) ->
+  writeScene: (path, particlesFile, cellsFile, opts, cb) ->
     data = """
       #version 3.6;
 
       // Right-handed coordinate system in which the z-axis points upwards
       camera {
-        location <30,-50,25>
+        location <#{opts.camera.location.join ','}>
         sky z
-        right -0.24*x*image_width/image_height
-        up 0.24*z
-        look_at <0,0,-0.5>
+        right #{opts.camera.right}
+        up #{opts.camera.up}
+        look_at <#{opts.camera.look_at.join ','}>
       }
 
       // White background

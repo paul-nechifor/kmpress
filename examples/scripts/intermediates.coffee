@@ -1,4 +1,5 @@
 fs = require 'fs'
+{spawn} = require 'child_process'
 {Runner} = require '../../runner'
 {Voronoi, Stitcher} = require '../../voronoi-runner'
 
@@ -26,10 +27,35 @@ renderFrame = (array, i, cb) ->
   v = new Voronoi
   path = "#{voronoiDir}/#{i}.png"
   opts =
-    width: 1920
-    height: 1080
+    width: 300
+    height: 200
     highQuality: true
-  v.run array, path, opts, cb
+    camera:
+      location: [30, -50, 25]
+      look_at: [0, 0, -0.5]
+      right: '-0.24*x*image_width/image_height'
+      up: '0.24*z'
+
+  v.run array, path, opts, (err) ->
+    return cb err if err
+    renderClusters array, i, cb
+
+renderClusters = (array, i, cb) ->
+  ns = array.map (n) -> n
+  ns = []
+  ns.push.apply ns, n for n in array
+  ns = ns.map (n) -> Math.floor (n + 5) / 10 * 255
+  ns.splice 0, 0, ns.length
+  list = ns.join ' '
+
+  voronoi = __dirname + '/../../kmpress/kmpress'
+  image = __dirname + '/../images/bird_large.tiff'
+  out = "#{voronoiDir}/clusters-#{i}.tiff"
+  s = spawn voronoi, ['-i', image, '-o', out, '-renderCluster']
+  s.stdin.end list
+  s.on 'close', (code) ->
+    return cb 'err-' + code unless code is 0
+    cb()
 
 renderAllSteps = (arrays, cb) ->
   i = 0
@@ -83,5 +109,5 @@ main = ->
           out: __dirname + '/../results/voronoi.mp4'
         s.stitch (err) ->
           throw err if err
-      
+
 main()
