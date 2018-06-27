@@ -1,3 +1,7 @@
+# This repository has been moved to [gitlab.com/paul-nechifor/kmpress](http://gitlab.com/paul-nechifor/kmpress).
+
+Old readme:
+
 # KMPress
 
 A program which uses *k*-means clustering to encode an image using fewer colors.
